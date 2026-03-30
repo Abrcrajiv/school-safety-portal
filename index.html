@@ -1104,15 +1104,16 @@ function toggleCategory(cat){
   populateSchools();
 }
 function renderDash(){
+  const scEl=document.getElementById('stat-cards'); if(!scEl) return;
   const all=allSchools(),total=all.length;
   const done=Object.keys(submissions).length,pct=total?Math.round(done/total*100):0;
-  document.getElementById('stat-cards').innerHTML=`
+  scEl.innerHTML=`
     <div class="stat-card"><div class="stat-label">Total Schools</div><div class="stat-value">${total}</div><div class="stat-sub">${cfg.clusters.length} clusters · Gurugram</div></div>
     <div class="stat-card stat-green"><div class="stat-label">Submitted</div><div class="stat-value">${done}</div><div class="stat-sub">${pct}% completion</div></div>
     <div class="stat-card stat-red"><div class="stat-label">Pending</div><div class="stat-value">${total-done}</div><div class="stat-sub">${100-pct}% remaining</div></div>
     <div class="stat-card stat-yellow"><div class="stat-label">Clusters Complete</div><div class="stat-value">${cfg.clusters.filter(c=>(cfg.schools[c]||[]).every(s=>submissions[typeof s==='object'?s.name:s])).length}</div><div class="stat-sub">of ${cfg.clusters.length}</div></div>`;
-  document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('prog-label').textContent=`${done} / ${total}`;
+  const pf=document.getElementById('prog-fill'); if(pf) pf.style.width=pct+'%';
+  const pl=document.getElementById('prog-label'); if(pl) pl.textContent=`${done} / ${total}`;
 }
 function filterByCluster(c){ document.getElementById('f-cluster').value=c; dashCluster=c; renderTable(); document.getElementById('school-table').scrollIntoView({behavior:'smooth'}); }
 function setClusterFilter(v){ dashCluster=v; renderTable(); }
@@ -1123,8 +1124,10 @@ function setFilter(f){
   renderTable();
 }
 function renderTable(){
-  const search=document.getElementById('f-search').value.toLowerCase();
-  const catFilter=document.getElementById('f-cat').value;
+  const fsEl=document.getElementById('f-search'); if(!fsEl) return;
+  const search=fsEl.value.toLowerCase();
+  const fcEl=document.getElementById('f-cat'); 
+  const catFilter=fcEl?fcEl.value:'';
   let rows=allSchools();
   if(dashCluster) rows=rows.filter(x=>x.cluster===dashCluster);
   if(dashFilter==='submitted') rows=rows.filter(x=>submissions[x.school]);
@@ -1132,6 +1135,7 @@ function renderTable(){
   if(catFilter) rows=rows.filter(x=>x.category===catFilter);
   if(search) rows=rows.filter(x=>x.school.toLowerCase().includes(search)||x.cluster.toLowerCase().includes(search));
   const tbody=document.getElementById('school-table'),empty=document.getElementById('empty-state');
+  if(!tbody||!empty) return;
   if(!rows.length){tbody.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
   const nf=cfg.contactFields.find(f=>f.id==='name');
@@ -1421,10 +1425,12 @@ function toast(msg,t){
 async function init(){
   applyAll();
   if(cfg.clusters.length>0) selClusterEditor=cfg.clusters[0];
+  // Start on Submit Report tab
+  showTab('submit');
   if(cfg.endpoint){
-    // First load remote config so branding etc. reflects saved settings
+    // Load remote config silently in background
     await loadRemoteConfig();
-    // Then load submissions
+    // Then load submissions silently
     loadFromSheets();
   } else {
     setConn('err','Not connected to Google Sheets. Go to Admin → Master Sheet → Google Sheets Setup.');
