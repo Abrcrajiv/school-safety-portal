@@ -565,28 +565,58 @@ code{background:#f1f5f9;padding:1px 5px;border-radius:3px;font-family:'DM Mono',
       <!-- ACTIVITIES -->
       <div class="mp-section" id="ms-activities">
         <div class="mp-title">Activity Columns</div>
-        <div class="mp-sub">Column headers in the data grid. Rename, add or remove. Click Save to push changes.</div>
-        <div class="field-list">
-          <div class="field-hdr">Columns (<span id="act-count">0</span>)</div>
+        <div class="mp-sub">Column headers in the data grid. Set a name and entry type for each column. Entry type controls what schools can enter in each cell.</div>
+        <div style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--navy);border-radius:var(--radius) var(--radius) 0 0;font-size:10px;font-weight:600;color:#e2e8f0;text-transform:uppercase;letter-spacing:.5px">
+          <div style="flex:1">Column Name</div>
+          <div style="width:130px">Entry Type</div>
+          <div style="width:22px"></div>
+        </div>
+        <div class="field-list" style="border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);padding:6px 12px;background:var(--surface);border-bottom:1px solid var(--border)">Columns (<span id="act-count">0</span>)</div>
           <div id="activity-list"></div>
-          <div class="field-add">
-            <input id="new-act" placeholder="New column name..." onkeydown="if(event.key==='Enter')addActivity()">
+          <div class="field-add" style="display:grid;grid-template-columns:1fr 130px auto;gap:8px">
+            <input id="new-act" placeholder="Column name e.g. SDMP Finalized" onkeydown="if(event.key==='Enter')addActivity()">
+            <select id="new-act-type" style="padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-family:inherit;outline:none">
+              <option value="number">Number</option>
+              <option value="text">Text</option>
+              <option value="url">Upload Link</option>
+              <option value="yesno">Yes / No</option>
+              <option value="date">Date</option>
+            </select>
             <button onclick="addActivity()">+ Add</button>
           </div>
+        </div>
+        <div style="margin-top:10px;padding:10px 13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--muted);line-height:1.6">
+          <strong>Entry types:</strong> Number = count (e.g. 5 schools done) · Text = free text · Upload Link = Google Drive / OneDrive URL · Yes/No = dropdown · Date = date picker
         </div>
       </div>
 
       <!-- ROW LABELS -->
       <div class="mp-section" id="ms-rowlabels">
         <div class="mp-title">Row Labels</div>
-        <div class="mp-sub">Row names in the data grid (Done, Yet to be Done, Total Schools, Remarks).</div>
-        <div class="field-list">
-          <div class="field-hdr">Rows (<span id="row-count">0</span>)</div>
+        <div class="mp-sub">Row names in the data grid. Set the label and entry type for each row. This controls what schools enter in that row across all columns.</div>
+        <div style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--navy);border-radius:var(--radius) var(--radius) 0 0;font-size:10px;font-weight:600;color:#e2e8f0;text-transform:uppercase;letter-spacing:.5px">
+          <div style="flex:1">Row Name</div>
+          <div style="width:130px">Entry Type</div>
+          <div style="width:22px"></div>
+        </div>
+        <div class="field-list" style="border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);padding:6px 12px;background:var(--surface);border-bottom:1px solid var(--border)">Rows (<span id="row-count">0</span>)</div>
           <div id="row-list"></div>
-          <div class="field-add">
-            <input id="new-row" placeholder="New row label..." onkeydown="if(event.key==='Enter')addRowLabel()">
+          <div class="field-add" style="display:grid;grid-template-columns:1fr 130px auto;gap:8px">
+            <input id="new-row" placeholder="Row name e.g. Done" onkeydown="if(event.key==='Enter')addRowLabel()">
+            <select id="new-row-type" style="padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-family:inherit;outline:none">
+              <option value="number">Number</option>
+              <option value="text">Text</option>
+              <option value="url">Upload Link</option>
+              <option value="yesno">Yes / No</option>
+              <option value="date">Date</option>
+            </select>
             <button onclick="addRowLabel()">+ Add</button>
           </div>
+        </div>
+        <div style="margin-top:10px;padding:10px 13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--muted);line-height:1.6">
+          <strong>Tip:</strong> "Done" and "Yet to be Done" → Number · "Remarks" → Text · "Proof / Evidence" → Upload Link
         </div>
       </div>
 
@@ -704,7 +734,7 @@ function buildDefaultCfg(){
   const schools = {};
   clusters.forEach(c => { schools[c] = SCHOOL_DATA[c]; });
   return {
-    endpoint:'https://script.google.com/macros/s/AKfycby_Y-U1x1yx8N2q_TcU6wErpLfkq45u60CkF8Zruk0MeC-bIdPdRGxuyhalBYd_dLwQTg/exec',
+    endpoint:'https://script.google.com/macros/s/AKfycbwxtxwGwa-sO59dm_SOjW8RGTJFp4dtAtYO-IUmdXTVC3_eUwkfUb2ZkU_sXyhynXTj1g/exec',
     adminPin:'1234',
     title:'School Safety QPR Submission Portal',
     sub:'District Education Officer, Gurugram · Haryana',
@@ -718,8 +748,24 @@ function buildDefaultCfg(){
     submitBtn:'Submit Report',
     clusters,
     schools,
-    activities:['SDMP Finalized','Safety Audit – Structural','Safety Audit – Non-Structural','Mock Drills Conducted','Fire Extinguishers Installed','Inflammable/Toxic Safety','Building Bye-Laws Compliance','RTE Recognition Certificate','Regular Safety Training','DM in Curriculum'],
-    rowLabels:['Done','Yet to be Done','Total Schools','Remarks'],
+    activities:[
+      {label:'SDMP Finalized',type:'number'},
+      {label:'Safety Audit – Structural',type:'number'},
+      {label:'Safety Audit – Non-Structural',type:'number'},
+      {label:'Mock Drills Conducted',type:'number'},
+      {label:'Fire Extinguishers Installed',type:'number'},
+      {label:'Inflammable/Toxic Safety',type:'number'},
+      {label:'Building Bye-Laws Compliance',type:'number'},
+      {label:'RTE Recognition Certificate',type:'number'},
+      {label:'Regular Safety Training',type:'number'},
+      {label:'DM in Curriculum',type:'number'},
+    ],
+    rowLabels:[
+      {label:'Done',type:'number'},
+      {label:'Yet to be Done',type:'number'},
+      {label:'Total Schools',type:'number'},
+      {label:'Remarks',type:'text'},
+    ],
     contactFields:[
       {id:'name',label:'Name of Submitting Person',type:'text',required:true},
       {id:'desig',label:'Designation',type:'text',required:false},
@@ -749,15 +795,26 @@ function getEP(){ return (document.getElementById('cfg-endpoint')||{}).value||cf
 
 async function apiGet(action){
   const ep=getEP(); if(!ep) throw new Error('No endpoint configured');
-  const r=await fetch(ep+'?action='+action+'&t='+Date.now());
+  const r=await fetch(ep+'?action='+action+'&t='+Date.now(),{
+    redirect:'follow',
+    method:'GET',
+  });
   if(!r.ok) throw new Error('HTTP '+r.status);
-  return await r.json();
+  const txt=await r.text();
+  try{ return JSON.parse(txt); }catch(e){ throw new Error('Bad response: '+txt.substring(0,100)); }
 }
 async function apiPost(body){
   const ep=getEP(); if(!ep) throw new Error('No endpoint configured');
-  const r=await fetch(ep,{method:'POST',body:JSON.stringify(body)});
+  // Apps Script requires POST via URL-encoded or text — send as plain text string
+  const r=await fetch(ep,{
+    method:'POST',
+    redirect:'follow',
+    body:JSON.stringify(body),
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+  });
   if(!r.ok) throw new Error('HTTP '+r.status);
-  return await r.json();
+  const txt=await r.text();
+  try{ return JSON.parse(txt); }catch(e){ throw new Error('Bad response: '+txt.substring(0,100)); }
 }
 
 // Load config from Google Sheets on startup
@@ -977,12 +1034,29 @@ function buildFormContact(){
 
 function buildDataGrid(){
   const tbl=document.getElementById('data-grid'); if(!tbl) return;
+  // Normalise activities and rowLabels to objects
+  const acts=cfg.activities.map(a=>toObj(a));
+  const rows=cfg.rowLabels.map(r=>toObj(r));
   let h=`<thead><tr><th class="col-head" style="text-align:left;min-width:100px">Row / Activity</th>`;
-  cfg.activities.forEach(a=>h+=`<th class="col-head" style="min-width:80px">${a}</th>`);
+  acts.forEach(a=>h+=`<th class="col-head" style="min-width:80px">${esc(a.label)}<div style="font-size:9px;opacity:.7;margin-top:2px">${TYPE_LABELS[a.type]||a.type}</div></th>`);
   h+=`</tr></thead><tbody>`;
-  cfg.rowLabels.forEach((row,ri)=>{
-    h+=`<tr><td class="row-lbl">${row}</td>`;
-    cfg.activities.forEach((_,ai)=>h+=`<td><input type="${ri<cfg.rowLabels.length-1?'number':'text'}" min="0" id="cell_${ri}_${ai}" placeholder="${ri<cfg.rowLabels.length-1?'0':'—'}"></td>`);
+  rows.forEach((row,ri)=>{
+    h+=`<tr><td class="row-lbl">${esc(row.label)}<div style="font-size:9px;color:var(--light)">${TYPE_LABELS[row.type]||row.type}</div></td>`;
+    acts.forEach((_,ai)=>{
+      // Cell type: row type takes priority (row defines what kind of value this row needs)
+      const cellType=row.type;
+      if(cellType==='yesno'){
+        h+=`<td><select id="cell_${ri}_${ai}" style="width:100%;padding:6px 4px;border:none;font-size:12px;font-family:inherit;background:transparent;outline:none;color:var(--text)"><option value="">—</option><option value="Yes">Yes</option><option value="No">No</option></select></td>`;
+      } else if(cellType==='url'){
+        h+=`<td><input type="url" id="cell_${ri}_${ai}" placeholder="https://..." style="width:100%;padding:7px 8px;border:none;font-size:11px;font-family:inherit;background:transparent;outline:none;color:var(--blue)"></td>`;
+      } else if(cellType==='date'){
+        h+=`<td><input type="date" id="cell_${ri}_${ai}" style="width:100%;padding:6px 4px;border:none;font-size:11px;font-family:inherit;background:transparent;outline:none;color:var(--text)"></td>`;
+      } else if(cellType==='number'){
+        h+=`<td><input type="number" min="0" id="cell_${ri}_${ai}" placeholder="0" style="width:100%;padding:7px 8px;border:none;font-size:12px;font-family:inherit;background:transparent;outline:none;color:var(--text)"></td>`;
+      } else {
+        h+=`<td><input type="text" id="cell_${ri}_${ai}" placeholder="—" style="width:100%;padding:7px 8px;border:none;font-size:12px;font-family:inherit;background:transparent;outline:none;color:var(--text)"></td>`;
+      }
+    });
     h+=`</tr>`;
   });
   tbl.innerHTML=h+'</tbody>';
@@ -1200,7 +1274,7 @@ function openDetail(school){
   const fRows=Object.entries(sub.fields||{}).map(([k,v])=>`<div class="det-row"><div class="det-lbl">${k}</div><div class="det-val">${v||'—'}</div></div>`).join('');
   let grid='';
   if(sub.gridData&&Object.keys(sub.gridData).length){
-    const acts=Object.keys(sub.gridData),rows=cfg.rowLabels;
+    const acts=Object.keys(sub.gridData),rows=cfg.rowLabels.map(r=>toObj(r).label);
     const th='<tr style="background:var(--navy)"><th style="padding:7px 10px;color:#e2e8f0;font-size:10px;text-align:left;min-width:100px">Row</th>'+acts.map(a=>`<th style="padding:7px 8px;color:#e2e8f0;font-size:10px;min-width:80px">${a}</th>`).join('')+'</tr>';
     const trs=rows.map(r=>`<tr><td style="font-weight:600;color:var(--navy);padding:7px 10px;font-size:12px">${r}</td>${acts.map(a=>`<td style="padding:7px 8px;font-size:12px;border-bottom:1px solid var(--border)">${sub.gridData[a]?.[r]??''}</td>`).join('')}</tr>`).join('');
     grid=`<div style="overflow-x:auto;margin-top:14px;border:1px solid var(--border);border-radius:var(--radius)"><table style="border-collapse:collapse;width:100%"><thead>${th}</thead><tbody>${trs}</tbody></table></div>`;
@@ -1237,7 +1311,15 @@ async function submitForm(){
     fields[f.label]=val;
   }
   const gridData={};
-  cfg.activities.forEach((a,ai)=>{ gridData[a]={}; cfg.rowLabels.forEach((r,ri)=>{ const el=document.getElementById(`cell_${ri}_${ai}`); gridData[a][r]=el?el.value.trim():''; }); });
+  cfg.activities.forEach((a,ai)=>{
+    const aObj=toObj(a);
+    gridData[aObj.label]={};
+    cfg.rowLabels.forEach((r,ri)=>{
+      const rObj=toObj(r);
+      const el=document.getElementById(`cell_${ri}_${ai}`);
+      gridData[aObj.label][rObj.label]=el?el.value.trim():'';
+    });
+  });
   if(!cfg.endpoint){showErr('Portal not connected to Google Sheets. Contact the administrator.');return;}
   submitting=true;
   const btn=document.getElementById('submit-btn');
@@ -1271,12 +1353,12 @@ function exportCSV(){
   dlCSV(rows,'QPR_Status.csv');
 }
 function exportFullCSV(){
-  const actHdrs=cfg.activities.flatMap(a=>cfg.rowLabels.map(r=>`${a} [${r}]`));
+  const actHdrs=cfg.activities.flatMap(a=>cfg.rowLabels.map(r=>`${toObj(a).label} [${toObj(r).label}]`));
   const cfHdrs=cfg.contactFields.map(f=>f.label);
   const rows=[['School','Category','Cluster','Submitted At',...cfHdrs,...actHdrs]];
   allSchools().filter(x=>submissions[x.school]).forEach(x=>{
     const s=submissions[x.school];
-    rows.push([x.school,x.category,x.cluster,s.time||'',...cfg.contactFields.map(f=>s.fields?.[f.label]||''),...cfg.activities.flatMap(a=>cfg.rowLabels.map(r=>s.gridData?.[a]?.[r]??''))]);
+    rows.push([x.school,x.category,x.cluster,s.time||'',...cfg.contactFields.map(f=>s.fields?.[f.label]||''),...cfg.activities.flatMap(a=>cfg.rowLabels.map(r=>s.gridData?.[toObj(a).label]?.[toObj(r).label]??''))]);
   });
   dlCSV(rows,'QPR_FullData.csv');
 }
@@ -1352,22 +1434,69 @@ function removeSchool(i){ cfg.schools[selClusterEditor].splice(i,1); renderSchoo
 // ════════════════════════════════════════════════════════════════
 // MASTER — ACTIVITIES & ROWS & CONTACT FIELDS
 // ════════════════════════════════════════════════════════════════
+// Helper — normalise activity/row to object
+function toObj(x){ return typeof x==='object'&&x!==null ? x : {label:String(x),type:'number'}; }
+
+// Type label display
+const TYPE_LABELS = {number:'Number',text:'Text',url:'Upload Link',yesno:'Yes/No',date:'Date'};
+function typeOpts(cur){
+  return Object.entries(TYPE_LABELS).map(([v,l])=>`<option value="${v}"${cur===v?' selected':''}>${l}</option>`).join('');
+}
+
 function renderMasterActivities(){
   const list=document.getElementById('activity-list'); if(!list) return;
-  document.getElementById('act-count').textContent=cfg.activities.length;
+  const actCount=document.getElementById('act-count'); if(actCount) actCount.textContent=cfg.activities.length;
   list.innerHTML='';
-  cfg.activities.forEach((a,i)=>{ const item=document.createElement('div');item.className='field-item';item.innerHTML=`<div class="field-num">${i+1}</div><input value="${esc(a)}" onchange="cfg.activities[${i}]=this.value;buildDataGrid()"><button class="ce-del" onclick="removeActivity(${i})">×</button>`;list.appendChild(item); });
+  cfg.activities.forEach((a,i)=>{
+    const obj=toObj(a);
+    const item=document.createElement('div');
+    item.className='field-item';
+    item.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)';
+    item.innerHTML=`
+      <div class="field-num">${i+1}</div>
+      <input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-size:12px;font-family:inherit;outline:none" value="${esc(obj.label)}" onchange="cfg.activities[${i}]=Object.assign(toObj(cfg.activities[${i}]),{label:this.value});buildDataGrid()">
+      <select onchange="cfg.activities[${i}]=Object.assign(toObj(cfg.activities[${i}]),{type:this.value});buildDataGrid()" style="width:120px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;outline:none;flex-shrink:0">
+        ${typeOpts(obj.type)}
+      </select>
+      <button class="ce-del" onclick="removeActivity(${i})">×</button>`;
+    list.appendChild(item);
+  });
 }
-function addActivity(){ const v=document.getElementById('new-act').value.trim(); if(!v) return; cfg.activities.push(v);document.getElementById('new-act').value='';renderMasterActivities();buildDataGrid(); }
+function addActivity(){
+  const v=document.getElementById('new-act').value.trim(); if(!v) return;
+  const t=document.getElementById('new-act-type').value||'number';
+  cfg.activities.push({label:v,type:t});
+  document.getElementById('new-act').value='';
+  renderMasterActivities();buildDataGrid();
+}
 function removeActivity(i){ cfg.activities.splice(i,1);renderMasterActivities();buildDataGrid(); }
 
 function renderMasterRows(){
   const list=document.getElementById('row-list'); if(!list) return;
-  document.getElementById('row-count').textContent=cfg.rowLabels.length;
+  const rowCount=document.getElementById('row-count'); if(rowCount) rowCount.textContent=cfg.rowLabels.length;
   list.innerHTML='';
-  cfg.rowLabels.forEach((r,i)=>{ const item=document.createElement('div');item.className='field-item';item.innerHTML=`<div class="field-num">${i+1}</div><input value="${esc(r)}" onchange="cfg.rowLabels[${i}]=this.value;buildDataGrid()"><button class="ce-del" onclick="removeRow(${i})">×</button>`;list.appendChild(item); });
+  cfg.rowLabels.forEach((r,i)=>{
+    const obj=toObj(r);
+    const item=document.createElement('div');
+    item.className='field-item';
+    item.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)';
+    item.innerHTML=`
+      <div class="field-num">${i+1}</div>
+      <input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-size:12px;font-family:inherit;outline:none" value="${esc(obj.label)}" onchange="cfg.rowLabels[${i}]=Object.assign(toObj(cfg.rowLabels[${i}]),{label:this.value});buildDataGrid()">
+      <select onchange="cfg.rowLabels[${i}]=Object.assign(toObj(cfg.rowLabels[${i}]),{type:this.value});buildDataGrid()" style="width:120px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;outline:none;flex-shrink:0">
+        ${typeOpts(obj.type)}
+      </select>
+      <button class="ce-del" onclick="removeRow(${i})">×</button>`;
+    list.appendChild(item);
+  });
 }
-function addRowLabel(){ const v=document.getElementById('new-row').value.trim(); if(!v) return; cfg.rowLabels.push(v);document.getElementById('new-row').value='';renderMasterRows();buildDataGrid(); }
+function addRowLabel(){
+  const v=document.getElementById('new-row').value.trim(); if(!v) return;
+  const t=document.getElementById('new-row-type').value||'number';
+  cfg.rowLabels.push({label:v,type:t});
+  document.getElementById('new-row').value='';
+  renderMasterRows();buildDataGrid();
+}
 function removeRow(i){ cfg.rowLabels.splice(i,1);renderMasterRows();buildDataGrid(); }
 
 function renderMasterCF(){
