@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gurugram Block Data Portal</title>
+<title>School Safety QPR Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -588,7 +588,7 @@ function buildDef(){
   };
 }
 
-let cfg=buildDef(), subs={}, curSec=0, fdata={}, uploads={}, submitting=false;
+let cfg=buildDef(), subs={}, curSec=0, fdata={}, uploads={}, driveLinks={}, submitting=false;
 let selCl=null, isAdmin=false, dashF='all', dashCl='';
 
 function lcfg(){try{const c=localStorage.getItem(CK);if(c){const p=JSON.parse(c);Object.assign(cfg,p);if(!cfg.sections||!cfg.sections.length)cfg.sections=JSON.parse(JSON.stringify(DEF_SECTIONS));}}catch(e){}}
@@ -1076,39 +1076,114 @@ function fBack(){
   saveSecData();curSec--;rFormSteps();rFormSection();
   document.getElementById('tab-submit').scrollIntoView({behavior:'smooth'});
 }
-function fClear(){fdata={};uploads={};curSec=0;rFormSteps();rFormSection();}
+function fClear(){fdata={};uploads={};driveLinks={};curSec=0;rFormSteps();rFormSection();}
 function showE(m){const el=document.getElementById('ferr');if(!el)return;el.textContent=m;el.style.display='block';setTimeout(()=>el.style.display='none',4500);}
 
 // ── FILE UPLOAD ───────────────────────────────────────────────
+// Max file size via portal (must match MAX_UPLOAD_MB in Code.gs)
+const PORTAL_MAX_MB = 30;
+
 function fAccept(f){const m={image:'image/*',pdf:'application/pdf',doc:'.doc,.docx,.xls,.xlsx,.ppt,.pptx','image,pdf':'image/*,application/pdf','image,doc':'image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx',any:'*'};return m[f.allowedTypes||'any']||'*';}
 function fSel(inp,fid,maxF,maxM){processF(Array.from(inp.files),fid,maxF,maxM);inp.value='';}
 function fDrop(e,fid,maxF,maxM,accept){processF(Array.from(e.dataTransfer.files),fid,maxF,maxM);}
 function processF(files,fid,maxF,maxM){
   if(!uploads[fid])uploads[fid]=[];
+  // Effective max: lower of field setting and portal hard limit
+  const effMax=Math.min(maxM,PORTAL_MAX_MB);
   for(const f of files){
     if(uploads[fid].length>=maxF){showE(`Max ${maxF} files allowed.`);break;}
-    if(f.size>maxM*1024*1024){showE(`"${f.name}" exceeds ${maxM}MB.`);continue;}
+    const fileMB=f.size/1024/1024;
+    if(fileMB>effMax){
+      // For large videos, offer the Google Drive link fallback
+      const isVideo=f.type.startsWith('video/');
+      if(isVideo){
+        showLargeFileHelper(fid,f.name,fileMB,effMax);
+      }else{
+        showE(`"${f.name}" is ${fileMB.toFixed(1)}MB — exceeds the ${effMax}MB limit. Please compress the file and try again.`);
+      }
+      continue;
+    }
     uploads[fid].push(f);
   }
   rPrev(fid);
 }
+
+// Shows a helper box for large video files with Drive link input
+function showLargeFileHelper(fid,fname,sizeMB,limitMB){
+  const w=document.getElementById('fp_'+fid);if(!w)return;
+  // Check if helper already shown
+  if(document.getElementById('lf-help-'+fid))return;
+  const box=document.createElement('div');
+  box.id='lf-help-'+fid;
+  box.style.cssText='background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;margin-top:8px;font-size:12px;color:#854d0e';
+  box.innerHTML=`<div style="font-weight:600;margin-bottom:6px">📹 Video too large (${sizeMB.toFixed(1)}MB &gt; ${limitMB}MB limit)</div>
+    <div style="margin-bottom:8px">For MP4 videos, upload directly to Google Drive and paste the shareable link below:</div>
+    <div style="display:flex;gap:6px">
+      <input id="lf-inp-${fid}" type="url" placeholder="Paste Google Drive / YouTube link here..." 
+        style="flex:1;padding:7px 10px;border:1px solid #fde68a;border-radius:6px;font-size:12px;font-family:inherit;outline:none;background:#fff">
+      <button onclick="addDriveLink('${fid}')" 
+        style="padding:7px 12px;background:#854d0e;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap">Add Link</button>
+    </div>
+    <div style="margin-top:6px;font-size:11px;color:#a16207">
+      How to get Drive link: Upload to Drive → Right-click → Share → Anyone with link → Copy link
+    </div>`;
+  w.appendChild(box);
+}
+
+// Stores a manually entered Drive link as a "virtual upload"
+function addDriveLink(fid){
+  const inp=document.getElementById('lf-inp-'+fid);if(!inp)return;
+  const url=inp.value.trim();
+  if(!url){showE('Please paste a valid link.');return;}
+  if(!url.startsWith('http')){showE('Link must start with http:// or https://');return;}
+  if(!driveLinks[fid])driveLinks[fid]=[];
+  driveLinks[fid].push(url);
+  inp.value='';
+  const box=document.getElementById('lf-help-'+fid);if(box)box.remove();
+  rPrev(fid);
+  toast('Drive link added ✓');
+}
+
 function rPrev(fid){
   const w=document.getElementById('fp_'+fid);if(!w)return;
-  w.innerHTML=(uploads[fid]||[]).map((f,i)=>`<div class="fitem">
-    <span style="font-size:16px">${f.type.startsWith('image')?'🖼':'📄'}</span>
+  const fileItems=(uploads[fid]||[]).map((f,i)=>`<div class="fitem">
+    <span style="font-size:16px">${f.type.startsWith('image')?'🖼':f.type.startsWith('video')?'🎬':'📄'}</span>
     <div style="flex:1;min-width:0"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500">${esc(f.name)}</div><div style="font-size:10px;color:var(--muted)">${(f.size/1024/1024).toFixed(2)}MB</div></div>
     <button onclick="uploads['${fid}'].splice(${i},1);rPrev('${fid}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px">×</button>
   </div>`).join('');
+  const linkItems=(driveLinks[fid]||[]).map((url,i)=>`<div class="fitem">
+    <span style="font-size:16px">🔗</span>
+    <div style="flex:1;min-width:0"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500;color:var(--blue)">${url}</div><div style="font-size:10px;color:var(--muted)">External link</div></div>
+    <button onclick="driveLinks['${fid}'].splice(${i},1);rPrev('${fid}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px">×</button>
+  </div>`).join('');
+  // Preserve large-file helper if present
+  const helper=document.getElementById('lf-help-'+fid);
+  w.innerHTML=fileItems+linkItems;
+  if(helper)w.appendChild(helper);
 }
+
 async function b64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
+
 async function upFiles(fid,label){
-  const files=uploads[fid]||[];if(!files.length)return'';
+  const files=uploads[fid]||[];
+  const links=(driveLinks[fid]||[]).slice(); // already-collected external links
   const pr=document.getElementById('fpr_'+fid);if(pr)pr.style.display='block';
-  const links=[];
+
   for(let i=0;i<files.length;i++){
-    const f=files[i];if(pr)pr.textContent=`Uploading ${i+1}/${files.length}: ${f.name}`;
-    try{const d=await b64(f);const r=await apiPost({action:'uploadFile',fileName:f.name,mimeType:f.type,data:d,folder:label});if(r.link)links.push(r.link);else if(r.error)throw new Error(r.error);}
-    catch(e){showE('Upload failed: '+e.message);if(pr)pr.style.display='none';return null;}
+    const f=files[i];
+    if(pr)pr.textContent=`Uploading ${i+1}/${files.length}: ${f.name}…`;
+    try{
+      const d=await b64(f);
+      const r=await apiPost({action:'uploadFile',fileName:f.name,mimeType:f.type,data:d,folder:label});
+      if(r.link)links.push(r.link);
+      else if(r.viewLink)links.push(r.viewLink);
+      else if(r.error)throw new Error(r.error);
+      if(r.warning)toast(r.warning,'err');
+    }catch(e){
+      showE('Upload failed: '+e.message);
+      if(pr)pr.style.display='none';
+      return null;
+    }
   }
   if(pr)pr.style.display='none';
   return links.join(', ');
